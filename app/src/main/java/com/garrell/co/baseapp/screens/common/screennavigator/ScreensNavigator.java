@@ -1,45 +1,35 @@
 package com.garrell.co.baseapp.screens.common.screennavigator;
 
-import android.app.Activity;
 import android.os.Bundle;
 
-import com.ncapdevi.fragnav.FragNavController;
-import com.ncapdevi.fragnav.FragNavTransactionOptions;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.garrell.co.baseapp.R;
 import com.garrell.co.baseapp.screens.home.HomeFragment;
-
-import java.util.Collections;
-
-import timber.log.Timber;
 
 public class ScreensNavigator {
 
-    private final Activity activity;
-    private final FragNavController fragNavController;
+    private final AppCompatActivity activity;
 
-    public ScreensNavigator(Activity activity,
-                            FragNavController fragNavController) {
+    public ScreensNavigator(AppCompatActivity activity) {
         this.activity = activity;
-        this.fragNavController = fragNavController;
-    }
-
-    public void init(Bundle savedInstanceState) {
-        fragNavController.setRootFragments(Collections.singletonList(HomeFragment.newInstance()));
-        fragNavController.setFragNavLogger((s, throwable) -> Timber.e(throwable, "ScreensNavigator: %s", s));
-        fragNavController.setDefaultTransactionOptions(new FragNavTransactionOptions.Builder().build());
-        fragNavController.initialize(FragNavController.TAB1, savedInstanceState);
     }
 
     public void onSaveInstanceState(Bundle saveInstanceState) {
-        fragNavController.onSaveInstanceState(saveInstanceState);
+    }
+
+    public void navigateToRequestPermissions(Bundle savedInsanceState) {
+        this.activity.getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container_view, HomeFragment.newInstance())
+                .commit();
     }
 
     public boolean navigateBack() {
-        if(fragNavController.isRootFragment()) {
-            return false;
-        } else {
-            fragNavController.popFragment();
-            return true;
-        }
+        return false;
     }
 
+    public void init(Bundle savedInstanceState) {
+        navigateToRequestPermissions(savedInstanceState);
+    }
 }

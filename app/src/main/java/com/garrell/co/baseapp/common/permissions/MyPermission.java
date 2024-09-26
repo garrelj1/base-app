@@ -3,8 +3,8 @@ package com.garrell.co.baseapp.common.permissions;
 import android.Manifest;
 
 public enum MyPermission {
-    READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
-    CAMERA(Manifest.permission.CAMERA);
+    CALL_LOGS(Manifest.permission.READ_CALL_LOG),
+    CONTACTS(Manifest.permission.READ_CONTACTS);
 
     public static MyPermission fromAndroidPermission(String androidPermission) {
         for (MyPermission permission : MyPermission.values()) {

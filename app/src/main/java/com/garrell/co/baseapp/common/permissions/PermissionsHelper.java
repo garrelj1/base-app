@@ -1,10 +1,12 @@
 package com.garrell.co.baseapp.common.permissions;
 
-import android.app.Activity;
 import android.content.pm.PackageManager;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.UiThread;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -12,13 +14,16 @@ import com.garrell.co.baseapp.common.observable.BaseObservable;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import timber.log.Timber;
 
 @UiThread
 public class PermissionsHelper extends BaseObservable<PermissionsHelper.Listener> {
 
     public interface Listener {
-        void onRequestPermissionsResult(int requestCode, PermissionsResult result);
-        void onPermissionsRequestCancelled(int requestCode);
+        void onRequestPermissionsResult(PermissionsResult result);
+        void onPermissionsRequestCancelled();
     }
 
     public static class PermissionsResult {
@@ -33,10 +38,47 @@ public class PermissionsHelper extends BaseObservable<PermissionsHelper.Listener
         }
     }
 
-    private final Activity mActivity;
+    private final AppCompatActivity mActivity;
+    private final ActivityResultLauncher<String []> resultHandler;
 
-    public PermissionsHelper(Activity activity) {
+    public PermissionsHelper(AppCompatActivity activity) {
         mActivity = activity;
+
+        ActivityResultContracts.RequestMultiplePermissions permissionsRequest = new ActivityResultContracts.RequestMultiplePermissions();
+        resultHandler = mActivity.registerForActivityResult(permissionsRequest, newPermissionsResultCallback());
+    }
+
+    public ActivityResultCallback<Map<String, Boolean>> newPermissionsResultCallback() {
+        return permissionResults -> {
+            Timber.d("Permissions request result: %s", permissionResults.toString());
+
+            List<MyPermission> grantedPermissions = new LinkedList<>();
+            List<MyPermission> deniedPermissions = new LinkedList<>();
+            List<MyPermission> deniedAndDoNotAskAgainPermissions = new LinkedList<>();
+
+            for (Map.Entry<String, Boolean> permissionResult : permissionResults.entrySet()) {
+
+                String androidPermission;
+                MyPermission permission;
+
+                androidPermission = permissionResult.getKey();
+                permission = MyPermission.fromAndroidPermission(androidPermission);
+                if (permissionResult.getValue()) {
+                    grantedPermissions.add(permission);
+                } else if (ActivityCompat.shouldShowRequestPermissionRationale(mActivity, androidPermission)) {
+                    deniedPermissions.add(permission);
+                } else {
+                    deniedAndDoNotAskAgainPermissions.add(permission);
+                }
+            }
+
+            if (grantedPermissions.isEmpty()) {
+                notifyPermissionsRequestCancelled();
+            } else {
+                PermissionsResult result = new PermissionsResult(grantedPermissions, deniedPermissions, deniedAndDoNotAskAgainPermissions);
+                notifyPermissionsResult(result);
+            }
+        };
     }
 
     public boolean hasPermission(MyPermission permission) {
@@ -61,48 +103,19 @@ public class PermissionsHelper extends BaseObservable<PermissionsHelper.Listener
         for (int i = 0; i < permissions.length; i++) {
             androidPermissions[i] = permissions[i].getAndroidPermission();
         }
-        ActivityCompat.requestPermissions(mActivity, androidPermissions, requestCode);
+
+        resultHandler.launch(androidPermissions);
     }
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] androidPermissions, @NonNull int[] grantResults) {
-        if (androidPermissions.length == 0 || grantResults.length == 0) {
-            notifyPermissionsRequestCancelled(requestCode);
-        }
-
-        List<MyPermission> grantedPermissions = new LinkedList<>();
-        List<MyPermission> deniedPermissions = new LinkedList<>();
-        List<MyPermission> deniedAndDoNotAskAgainPermissions = new LinkedList<>();
-
-        String androidPermission;
-        MyPermission permission;
-
-        for (int i = 0; i < androidPermissions.length; i++) {
-            androidPermission = androidPermissions[i];
-            permission = MyPermission.fromAndroidPermission(androidPermission);
-            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                grantedPermissions.add(permission);
-            } else if (ActivityCompat.shouldShowRequestPermissionRationale(mActivity, androidPermission)) {
-                deniedPermissions.add(permission);
-            } else {
-                deniedAndDoNotAskAgainPermissions.add(permission);
-            }
-        }
-
-        PermissionsResult result = new PermissionsResult(grantedPermissions, deniedPermissions, deniedAndDoNotAskAgainPermissions);
-        notifyPermissionsResult(requestCode, result);
-    }
-
-    private void notifyPermissionsResult(int requestCode, PermissionsResult permissionsResult) {
+    private void notifyPermissionsResult(PermissionsResult permissionsResult) {
         for (Listener listener : getListeners()) {
-            listener.onRequestPermissionsResult(requestCode, permissionsResult);
+            listener.onRequestPermissionsResult(permissionsResult);
         }
     }
 
-    private void notifyPermissionsRequestCancelled(int requestCode) {
+    private void notifyPermissionsRequestCancelled() {
         for (Listener listener : getListeners()) {
-            listener.onPermissionsRequestCancelled(requestCode);
+            listener.onPermissionsRequestCancelled();
         }
     }
-
-
 }

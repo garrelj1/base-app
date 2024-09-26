@@ -36,7 +36,7 @@ public class ApplicationCompositionRoot {
         return mBackgroundThreadPoster;
     }
 
-    private ContentResolver getContentResolver() {
+    public ContentResolver getContentResolver() {
         return mApplication.getContentResolver();
     }
 

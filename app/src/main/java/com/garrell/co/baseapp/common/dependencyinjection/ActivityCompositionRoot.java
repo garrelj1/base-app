@@ -10,13 +10,13 @@ import com.garrell.co.baseapp.R;
 import com.garrell.co.baseapp.screens.common.ViewMvcFactory;
 import com.garrell.co.baseapp.screens.common.dialogs.DialogsManager;
 import com.garrell.co.baseapp.screens.common.screennavigator.ScreensNavigator;
-import com.ncapdevi.fragnav.FragNavController;
 import com.garrell.co.baseapp.common.permissions.PermissionsHelper;
 import com.techyourchance.dialoghelper.DialogHelper;
 
 public class ActivityCompositionRoot extends ComponentCompositionRoot {
 
     private final AppCompatActivity activity;
+    private PermissionsHelper permissionsHelper;
 
     public ActivityCompositionRoot(ApplicationCompositionRoot applicationCompositionRoot,
                                    AppCompatActivity activity) {
@@ -38,11 +38,7 @@ public class ActivityCompositionRoot extends ComponentCompositionRoot {
     }
 
     public ScreensNavigator getScreenNavigator() {
-        return new ScreensNavigator(activity, getFragNavController());
-    }
-
-    private FragNavController getFragNavController() {
-        return new FragNavController(getFragmentManager(), R.id.fragment_container_view);
+        return new ScreensNavigator(activity);
     }
 
     public ViewMvcFactory getViewMvcFactory() {
@@ -58,6 +54,10 @@ public class ActivityCompositionRoot extends ComponentCompositionRoot {
     }
 
     public PermissionsHelper getPermissionsHelper() {
-        return new PermissionsHelper(activity);
+        if (permissionsHelper == null) {
+            permissionsHelper = new PermissionsHelper(activity);
+        }
+
+        return permissionsHelper;
     }
 }

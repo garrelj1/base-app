@@ -14,21 +14,20 @@ import com.garrell.co.baseapp.common.permissions.MyPermission;
 import com.garrell.co.baseapp.common.permissions.PermissionsHelper;
 import com.garrell.co.baseapp.screens.common.ViewMvcFactory;
 
-import com.techyourchance.threadposter.BackgroundThreadPoster;
-import com.techyourchance.threadposter.UiThreadPoster;
+import com.garrell.co.baseapp.screens.common.screennavigator.ScreensNavigator;
+
+import timber.log.Timber;
 
 public class HomeFragment extends BaseFragment implements
         HomeViewMvc.Listener,
         PermissionsHelper.Listener {
 
-    private static final MyPermission[] PERMISSIONS
-            = new MyPermission[]{MyPermission.CAMERA, MyPermission.READ_PHONE_STATE};
+    private static final MyPermission[] PERMISSIONS = new MyPermission[]{};
 
     private DialogsManager dialogsManager;
     private ViewMvcFactory viewMvcFactory;
     private PermissionsHelper permissionsHelper;
-    private UiThreadPoster uiThreadPoster;
-    private BackgroundThreadPoster backgroundThreadPoster;
+    private ScreensNavigator navigator;
 
     private HomeViewMvc mViewMvc;
 
@@ -40,6 +39,8 @@ public class HomeFragment extends BaseFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         viewMvcFactory = getControllerCompositionRoot().getViewMvcFactory();
         permissionsHelper = getControllerCompositionRoot().getPermissionsHelper();
+        navigator = getControllerCompositionRoot().getScreenNavigator();
+        dialogsManager = getControllerCompositionRoot().getDialogsManager();
         super.onCreate(savedInstanceState);
     }
 
@@ -68,12 +69,14 @@ public class HomeFragment extends BaseFragment implements
 
     @Override
     public void onRequestPermissionsClicked() {
+        Timber.d("Controller got request permissions click");
         permissionsHelper.requestAllPermissions(PERMISSIONS, 0);
     }
 
 
     private void refreshPermissionsUi() {
         if (permissionsHelper.hasAllPermissions(PERMISSIONS)) {
+            Timber.d("Has all permissions");
             mViewMvc.disableRequestPermissionsButton();
         } else {
             mViewMvc.enableRequestPermissionsButton();
@@ -81,7 +84,9 @@ public class HomeFragment extends BaseFragment implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, PermissionsHelper.PermissionsResult result) {
+    public void onRequestPermissionsResult(PermissionsHelper.PermissionsResult result) {
+        Timber.d("Result of permission request");
+
         if (!result.deniedDoNotAskAgain.isEmpty()) {
             dialogsManager.showInfoDialog(
                     "Missing permissions",
@@ -112,7 +117,7 @@ public class HomeFragment extends BaseFragment implements
     }
 
     @Override
-    public void onPermissionsRequestCancelled(int requestCode) {
+    public void onPermissionsRequestCancelled() {
         dialogsManager.showInfoDialog(
                 "",
                 "Permissions request cancelled",

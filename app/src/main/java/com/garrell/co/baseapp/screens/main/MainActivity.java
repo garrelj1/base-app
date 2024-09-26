@@ -31,12 +31,6 @@ public class MainActivity extends BaseActivity implements BackPressDispatcher {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
-
-    @Override
     public void onBackPressed() {
         boolean backPressListenerConsumedTheEvent = false;
         for (BackPressListener backPressListener : backPressListeners) {

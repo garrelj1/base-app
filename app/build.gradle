@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    compileSdk 33
-    buildToolsVersion = "30.0.3"
+    compileSdk 35
+    buildToolsVersion = "34.0.0"
 
     defaultConfig {
         applicationId "com.garrell.co.apptemplate"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdkVersion 24
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
 
@@ -34,11 +34,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // fragment navigation
-    implementation 'com.ncapdevi:frag-nav:3.3.0'
-
     // Multithreading
-    implementation 'com.techyourchance.threadposter:threadposter:0.8.3'
+    implementation 'com.techyourchance:threadposter:1.0.1'
 
     // Logging
     implementation 'com.jakewharton.timber:timber:4.7.1'
@@ -47,7 +44,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.1.1'
 
     // dialogs
-    implementation 'com.techyourchance:dialoghelper:0.9.0'
+    implementation 'com.techyourchance:dialoghelper:1.0.0'
     implementation 'androidx.navigation:navigation-fragment:2.5+'
     implementation 'androidx.navigation:navigation-ui:2.5+'
 
